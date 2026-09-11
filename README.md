@@ -35,7 +35,7 @@ npx serve .
 
 Hosted on Vercel, connected directly to this GitHub repo, so pushing to main redeploys it automatically. No build step needed since it's static.
  
-Live: https://my-portfolio-cyan-iota-56.vercel.app/
+Live: https://leissuwa-portfolio.vercel.app/
 
 ---
 
