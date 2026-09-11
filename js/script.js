@@ -1,32 +1,9 @@
 // Leiss Uwase portfolio
-// Small, purposeful interactivity: scrollspy nav, reveal-on-scroll,
-// a live Kigali clock, a scroll-progress ruler, and a CV placeholder notice.
+// Purposeful interactivity only: scrollspy nav, an editor-style line-number
+// gutter that tracks scroll progress, a single hero typing moment, and
+// the CV link.
 
 document.addEventListener('DOMContentLoaded', () => {
-
-  /* ---------- Header: blends into hero, solidifies on scroll ---------- */
-  const header = document.querySelector('header');
-  function updateHeaderState(){
-    if (window.scrollY > 24) {
-      header.classList.add('scrolled');
-    } else {
-      header.classList.remove('scrolled');
-    }
-  }
-  window.addEventListener('scroll', updateHeaderState, { passive: true });
-  updateHeaderState();
-
-  /* ---------- Reveal on scroll (single, restrained effect) ---------- */
-  const revealEls = document.querySelectorAll('.reveal');
-  const revealObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting){
-        entry.target.classList.add('in');
-        revealObserver.unobserve(entry.target);
-      }
-    });
-  }, { threshold: 0.12 });
-  revealEls.forEach(el => revealObserver.observe(el));
 
   /* ---------- Scrollspy nav ---------- */
   const sections = document.querySelectorAll('main section[id]');
@@ -44,22 +21,86 @@ document.addEventListener('DOMContentLoaded', () => {
   }, { rootMargin: '-40% 0px -50% 0px', threshold: 0 });
   sections.forEach(s => spyObserver.observe(s));
 
-  /* ---------- Ruler scroll progress ---------- */
-  const ticks = document.querySelectorAll('.ruler .tick');
-  function updateRuler(){
-    if (!ticks.length) return;
+  /* ---------- Gutter: editor-style scroll progress ---------- */
+  const nums = document.querySelectorAll('.gutter .num');
+  function updateGutter(){
+    if (!nums.length) return;
     const scrollTop = window.scrollY;
     const docHeight = document.documentElement.scrollHeight - window.innerHeight;
     const progress = docHeight > 0 ? scrollTop / docHeight : 0;
-    const filledCount = Math.round(progress * ticks.length);
-    ticks.forEach((tick, i) => {
-      tick.classList.toggle('filled', i < filledCount);
+    const filledCount = Math.round(progress * nums.length);
+    nums.forEach((n, i) => {
+      n.classList.toggle('filled', i < filledCount);
     });
   }
-  window.addEventListener('scroll', updateRuler, { passive: true });
-  updateRuler();
+  window.addEventListener('scroll', updateGutter, { passive: true });
+  updateGutter();
 
-  /* ---------- CV placeholder handling ---------- 
+  /* ---------- One orchestrated motion: hero terminal line types out ---------- */
+  const term = document.querySelector('.termline');
+  if (term && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const full = term.innerHTML;
+    const promptPart = term.querySelector('.prompt') ? term.querySelector('.prompt').outerHTML : '';
+    const staticPart = 'leiss@kigali:~$ ';
+    const typed = 'whoami';
+    term.innerHTML = promptPart + '<span>:</span><span class="path">~</span><span>$ </span><span class="typed"></span><span class="type-cursor">▌</span>';
+    const target = term.querySelector('.typed');
+    const cursor = term.querySelector('.type-cursor');
+    let i = 0;
+    function tick(){
+      if (i <= typed.length){
+        target.textContent = typed.slice(0, i);
+        i++;
+        setTimeout(tick, 80);
+      } else if (cursor) {
+        cursor.style.animation = 'blink 1s step-end infinite';
+      }
+    }
+    setTimeout(tick, 300);
+  }
+
+  /* ---------- Project screenshot slideshows ---------- */
+  document.querySelectorAll('[data-slideshow]').forEach(box => {
+    const slides = Array.from(box.querySelectorAll('.slide'));
+    if (slides.length < 2) return;
+    const dotsWrap = box.querySelector('.dots');
+    let current = 0;
+    let timer = null;
+
+    slides.forEach((_, i) => {
+      const dot = document.createElement('button');
+      if (i === 0) dot.classList.add('active');
+      dot.setAttribute('aria-label', 'Show screenshot ' + (i + 1));
+      dot.addEventListener('click', () => goTo(i));
+      dotsWrap.appendChild(dot);
+    });
+    const dots = Array.from(dotsWrap.children);
+
+    function goTo(i){
+      slides[current].classList.remove('active');
+      dots[current].classList.remove('active');
+      current = (i + slides.length) % slides.length;
+      slides[current].classList.add('active');
+      dots[current].classList.add('active');
+    }
+    function next(){ goTo(current + 1); }
+    function prev(){ goTo(current - 1); }
+
+    const nextBtn = box.querySelector('.nav-next');
+    const prevBtn = box.querySelector('.nav-prev');
+    if (nextBtn) nextBtn.addEventListener('click', () => { next(); restart(); });
+    if (prevBtn) prevBtn.addEventListener('click', () => { prev(); restart(); });
+
+    function restart(){
+      clearInterval(timer);
+      timer = setInterval(next, 4500);
+    }
+    restart();
+    box.addEventListener('mouseenter', () => clearInterval(timer));
+    box.addEventListener('mouseleave', restart);
+  });
+
+  /* ---------- CV link ---------- */
   const toast = document.getElementById('toast');
   function showToast(msg){
     if(!toast) return;
@@ -73,6 +114,6 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       showToast('CV link not connected yet. Replace href="#cv" in index.html with your hosted CV URL.');
     });
-  });*/
+  });
 
 });
