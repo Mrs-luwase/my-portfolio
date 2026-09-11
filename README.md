@@ -1,4 +1,4 @@
-# Leiss Uwase — Portfolio
+# Leiss Uwase | My Portfolio
 
 This is my personal portfolio, built to show what I actually work on: Information systems, data, web dev & design. It is designed and coded from a blank file, plain HTML, CSS, and JavaScript, no template, no framework.
 
